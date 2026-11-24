@@ -33,6 +33,7 @@
       <table>
         <tr><td class="p1">Spieler 1</td><td>Bewegen <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · Tasten 1/2/3/4 = <kbd>F</kbd> <kbd>G</kbd> / <kbd>V</kbd> <kbd>B</kbd></td></tr>
         <tr><td class="p2">Spieler 2</td><td>Bewegen <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> · Tasten 1/2/3/4 = Numpad <kbd>4</kbd> <kbd>5</kbd> / <kbd>1</kbd> <kbd>2</kbd> (alternativ <kbd>O</kbd> <kbd>P</kbd> / <kbd>L</kbd> <kbd>Ö</kbd>)</td></tr>
+        <tr><td>Online</td><td>Menü → <b>Modus</b>: Einer wählt <kbd>ONLINE HOSTEN</kbd>, der andere im selben Netz <kbd>ONLINE BEITRETEN</kbd> – das Spiel findet sich automatisch (sonst 4-stelligen Code eingeben). Online spielst du mit WASD+F/G/V/B oder Pfeilen+Numpad. <kbd>Esc</kbd> = Match verlassen.</td></tr>
         <tr><td>System</td><td>Menü: <kbd>W</kbd>/<kbd>S</kbd> bzw. <kbd>↑</kbd>/<kbd>↓</kbd> Zeile, <kbd>A</kbd>/<kbd>D</kbd> bzw. <kbd>←</kbd>/<kbd>→</kbd> ändern (Charakter, Map, Rundenzeit, Musik) · <kbd>Enter</kbd> Start · <kbd>Esc</kbd> Pause · <kbd>M</kbd> Musik stumm/an</td></tr>
       </table>
       <h3>Grundlagen</h3>
@@ -61,8 +62,10 @@
 <script src="js/stages.js"></script>
 <script src="js/stages2.js"></script>
 <script src="js/hud.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="js/music.js"></script>
 <script src="js/tracks.js"></script>
+<script src="js/net.js"></script>
 <script src="js/game.js"></script>
 <script>
   Object.keys(CHARS).forEach((k, i) => {

@@ -13,7 +13,7 @@ const KEYMAPS = [
   },
 ];
 
-const GAME_KEYS = new Set(['Enter', 'Escape', 'Space', 'KeyM']);
+const GAME_KEYS = new Set(['Enter', 'Escape', 'Space', 'KeyM', 'Backspace']);
 KEYMAPS.forEach(m => Object.values(m).forEach(arr => arr.forEach(c => GAME_KEYS.add(c))));
 
 window.addEventListener('keydown', e => {
@@ -35,13 +35,30 @@ class InputReader {
   }
   any(codes) { return codes.some(c => Keys.held.has(c)); }
 
+  // Rohe Eingabe als Bits (absolut, nicht relativ zur Blickrichtung) – so lässt sie sich übers Netz schicken.
+  // 1=links 2=rechts 4=hoch 8=runter 16..128=Tasten 1-4 256=Start(Enter)
+  static rawBits(maps) {
+    let bits = 0;
+    const any = codes => codes.some(c => Keys.held.has(c));
+    for (const m of maps) {
+      if (any(m.left)) bits |= 1;
+      if (any(m.right)) bits |= 2;
+      if (any(m.up)) bits |= 4;
+      if (any(m.down)) bits |= 8;
+      for (let i = 1; i <= 4; i++) if (any(m['b' + i])) bits |= 8 << i;
+    }
+    if (Keys.held.has('Enter')) bits |= 256;
+    return bits;
+  }
+
   sample(facing) {
-    const m = this.map;
-    let h = (this.any(m.right) ? 1 : 0) - (this.any(m.left) ? 1 : 0);
-    const v = (this.any(m.up) ? 1 : 0) - (this.any(m.down) ? 1 : 0);
+    // source: optionale Eingabequelle (z.B. Netzwerk), sonst die eigene Tastaturbelegung
+    const bits = this.source ? this.source() : InputReader.rawBits([this.map]);
+    let h = ((bits & 2) ? 1 : 0) - ((bits & 1) ? 1 : 0);
+    const v = ((bits & 4) ? 1 : 0) - ((bits & 8) ? 1 : 0);
     h *= facing;
     const dir = 5 + h + v * 3;
-    const btn = [1, 2, 3, 4].map(i => this.any(m['b' + i]));
+    const btn = [1, 2, 3, 4].map(i => !!(bits & (8 << i)));
     const press = btn.map((b, i) => b && !this.prevBtn[i]);
     this.prevBtn = btn;
     const rec = { dir, btn, press };
