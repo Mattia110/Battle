@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storm Fist</title>
+<style>
+  :root { --bg: #0c0a12; --panel: #17131f; --text: #e8e4f0; --muted: #9a93ab; --p1: #d040ff; --p2: #4fc8ff; --gold: #ffd23a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, Segoe UI, Arial, sans-serif; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 12px 16px 40px; }
+  canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,.6); }
+  .info { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
+  .card { background: var(--panel); border-radius: 8px; padding: 14px 18px; }
+  .card h2 { margin: 0 0 8px; font-size: 18px; letter-spacing: .5px; }
+  .card h3 { margin: 14px 0 6px; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 3px 6px; border-bottom: 1px solid rgba(255,255,255,.06); vertical-align: top; }
+  td:first-child { white-space: nowrap; font-family: Consolas, monospace; color: var(--gold); width: 1%; }
+  kbd { background: #2a2433; border: 1px solid #443b52; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-family: Consolas, monospace; font-size: 12px; }
+  .p1 { color: var(--p1); } .p2 { color: var(--p2); }
+  .tips { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .tips b { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <canvas id="game" width="1280" height="720"></canvas>
+
+  <div class="info">
+    <div class="card">
+      <h2>Steuerung</h2>
+      <table>
+        <tr><td class="p1">Spieler 1</td><td>Bewegen <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · Tasten 1/2/3/4 = <kbd>F</kbd> <kbd>G</kbd> / <kbd>V</kbd> <kbd>B</kbd></td></tr>
+        <tr><td class="p2">Spieler 2</td><td>Bewegen <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> · Tasten 1/2/3/4 = Numpad <kbd>4</kbd> <kbd>5</kbd> / <kbd>1</kbd> <kbd>2</kbd> (alternativ <kbd>O</kbd> <kbd>P</kbd> / <kbd>L</kbd> <kbd>Ö</kbd>)</td></tr>
+        <tr><td>System</td><td>Menü: <kbd>W</kbd>/<kbd>S</kbd> bzw. <kbd>↑</kbd>/<kbd>↓</kbd> Zeile, <kbd>A</kbd>/<kbd>D</kbd> bzw. <kbd>←</kbd>/<kbd>→</kbd> ändern (Charakter, Map, Rundenzeit, Musik) · <kbd>Enter</kbd> Start · <kbd>Esc</kbd> Pause · <kbd>M</kbd> Musik stumm/an</td></tr>
+      </table>
+      <h3>Grundlagen</h3>
+      <div class="tips">
+        1 = linke Hand, 2 = rechte Hand, 3 = linker Fuß, 4 = rechter Fuß.
+        Richtungen sind relativ zur Blickrichtung: <b>f</b> = vorwärts, <b>b</b> = zurück, <b>d</b> = runter, <b>df</b> = runter-vorwärts usw.<br>
+        <b>Blocken:</b> Stehen oder zurück halten blockt High &amp; Mid. Ducken (d / db) blockt Lows – Highs fliegen über dich hinweg.<br>
+        <b>Dash:</b> f,f · <b>Backdash:</b> b,b (wiederholt = Korean Backdash) · <b>Wavedash:</b> f,n,d,df und dann n,d,df wiederholen · <b>Springen:</b> u · <b>Schnell aufstehen:</b> beliebige Taste beim Aufkommen.<br>
+        <b>Motion-Eingaben</b> (f,n,d,df): Auf der Tastatur funktioniert auch das Rollen f → df → d → df. <b>Electric:</b> Bei f,n,d,df+2 die 2 im <i>selben Moment</i> wie df drücken (max. 1 Frame später) → schneller, mehr Schaden, +5 auf Block.<br>
+        <b>Surge</b> (2+3, einmal pro Runde): Kraft-Modus für 10 s, danach 2+3 erneut für den Spezialangriff.
+        <b>Rage</b> ab 30 % HP: +10 % Schaden und einmalig df+1+2.<br>
+        <b>Juggles:</b> Nach einem Launcher kannst du den Gegner in der Luft weiter treffen. Gegen die Wand gibt es einen Wall Splat.
+      </div>
+    </div>
+    <div class="card" id="ml0"></div>
+    <div class="card" id="ml1"></div>
+  </div>
+</div>
+
+<script src="js/input.js"></script>
+<script src="js/moves.js"></script>
+<script src="js/render.js"></script>
+<script src="js/draw.js"></script>
+<script src="js/fighter.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/stages.js"></script>
+<script src="js/stages2.js"></script>
+<script src="js/hud.js"></script>
+<script src="js/music.js"></script>
+<script src="js/tracks.js"></script>
+<script src="js/game.js"></script>
+<script>
+  Object.keys(CHARS).forEach((k, i) => {
+    const c = CHARS[k], el = document.getElementById('ml' + i);
+    if (!el) return;
+    el.innerHTML = `<h2 style="color:${c.colors.elec}">${c.name} <small style="color:var(--muted);font-weight:400">– ${c.sub}</small></h2>
+      <table>${c.moveList.map(([cmd, desc]) => `<tr><td>${cmd}</td><td>${desc}</td></tr>`).join('')}</table>`;
+  });
+</script>
+</body>
+</html>
